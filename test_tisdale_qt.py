@@ -83,7 +83,7 @@ class TestCalculateTisdaleScore:
         assert with_mi["score"] == 2
 
     def test_heart_failure(self):
-        """Heart failure should add 2 points."""
+        """Heart failure should add 3 points."""
         no_hf = calculate_tisdale_score(heart_failure=False)
         with_hf = calculate_tisdale_score(heart_failure=True)
         assert no_hf["score"] == 0
@@ -99,14 +99,14 @@ class TestCalculateTisdaleScore:
         assert two_drugs["score"] == 6
 
     def test_sepsis(self):
-        """Sepsis should add 2 points."""
+        """Sepsis should add 3 points."""
         no_sepsis = calculate_tisdale_score(sepsis=False)
         with_sepsis = calculate_tisdale_score(sepsis=True)
         assert no_sepsis["score"] == 0
         assert with_sepsis["score"] == 3
 
     def test_hypoalbuminemia(self):
-        """Hypoalbuminemia should add 2 points."""
+        """Hypoalbuminemia is not part of the Tisdale score."""
         normal_alb = calculate_tisdale_score(hypoalbuminemia=False)
         low_alb = calculate_tisdale_score(hypoalbuminemia=True)
         assert normal_alb["score"] == 0
@@ -149,7 +149,7 @@ class TestCalculateTisdaleScore:
         assert len(result["component_breakdown"]) == 3
 
     def test_empty_input(self):
-        """No parameters should return score 0."""
+        """No parameters yield an incomplete zero-point subtotal."""
         result = calculate_tisdale_score()
         assert result["score"] == 0
         assert result["risk_classification"] == "Incomplete"
