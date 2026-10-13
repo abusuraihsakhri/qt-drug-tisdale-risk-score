@@ -35,7 +35,9 @@ function render(result) {
       : result.tier === "Moderate"
         ? "Moderate-risk stratum. Consider ECG surveillance and correction of modifiable risk factors."
         : "Low-risk stratum within the validated model; individual clinical risks still require review."
-    : "Incomplete assessment. A subtotal is shown; do not interpret it as the final risk category.";
+    : result.score >= 11
+      ? "Incomplete assessment: the subtotal already exceeds the high-risk threshold. Complete the remaining inputs."
+      : "Incomplete assessment. A subtotal is shown; do not interpret it as the final risk category.";
   breakdown.replaceChildren();
   for (const part of result.components) {
     const li = document.createElement("li");
