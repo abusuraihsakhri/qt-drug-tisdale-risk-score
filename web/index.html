@@ -1,236 +1,109 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Qt Drug Tisdale Risk Score — Operations Console</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --bg: #090d16;
-            --card: #111827;
-            --border: #1f293d;
-            --accent: #3b82f6;
-            --accent-glow: rgba(59, 130, 246, 0.25);
-            --text: #f3f4f6;
-            --text-muted: #9ca3af;
-            --danger: #ef4444;
-            --warning: #f59e0b;
-            --success: #10b981;
-        }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body {
-            font-family: 'Inter', sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            padding: 2rem;
-            min-height: 100vh;
-        }
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid var(--border);
-            padding-bottom: 1.5rem;
-            margin-bottom: 2rem;
-        }
-        .header-title h1 { font-size: 1.6rem; font-weight: 700; color: #fff; }
-        .header-title p { color: var(--text-muted); font-size: 0.9rem; margin-top: 0.25rem; }
-        .badge {
-            display: inline-block;
-            padding: 0.3rem 0.8rem;
-            border-radius: 9999px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            background: var(--accent-glow);
-            color: var(--accent);
-            border: 1px solid var(--accent);
-        }
-        .grid {
-            display: grid;
-            grid-template-columns: 1fr 1.2fr;
-            gap: 1.5rem;
-        }
-        .card {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 1.5rem;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-        }
-        .card h2 {
-            font-size: 1.1rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        .form-group { margin-bottom: 1rem; }
-        label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.4rem; }
-        input, select, textarea {
-            width: 100%;
-            padding: 0.65rem 0.9rem;
-            background: #0d1322;
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            color: #fff;
-            font-family: inherit;
-            font-size: 0.9rem;
-        }
-        input:focus, textarea:focus { outline: none; border-color: var(--accent); }
-        .btn {
-            background: var(--accent);
-            color: #fff;
-            border: none;
-            padding: 0.7rem 1.4rem;
-            border-radius: 6px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: 0.2s;
-            width: 100%;
-        }
-        .btn:hover { background: #2563eb; }
-        .terminal {
-            background: #060911;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 1rem;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.85rem;
-            color: #10b981;
-            height: 380px;
-            overflow-y: auto;
-            white-space: pre-wrap;
-        }
-        .metrics-bar {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-        }
-        .metric-box {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 1rem;
-            text-align: center;
-        }
-        .metric-val { font-size: 1.4rem; font-weight: 700; color: #fff; margin-top: 0.25rem; }
-        .metric-label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; }
-    </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <meta name="description" content="Local, evidence-based Tisdale QTc prolongation risk score calculator (0–21 points).">
+  <title>Tisdale QTc Risk Calculator</title>
+  <style>
+    :root { font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: #172b3b; background: #f5f7fb; font-size: 16px; }
+    * { box-sizing: border-box; }
+    body { margin: 0; line-height: 1.5; }
+    a { color: #125b92; }
+    a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px solid #e4a448; outline-offset: 3px; }
+    .wrap { max-width: 1060px; margin: 0 auto; padding: 30px 20px 54px; }
+    header { margin-bottom: 24px; }
+    .eyebrow { color: #40617a; font-weight: 700; text-transform: uppercase; letter-spacing: .11em; font-size: .76rem; }
+    h1 { font-size: clamp(1.75rem,3.5vw,2.4rem); letter-spacing: -.035em; line-height: 1.16; margin: 6px 0 8px; }
+    h2 { font-size: 1.16rem; margin: 0 0 14px; }
+    .intro { color: #43586c; max-width: 780px; margin: 0; }
+    .layout { display: grid; grid-template-columns: minmax(0,1.25fr) minmax(280px,.85fr); gap: 18px; align-items: start; }
+    .panel { background: white; border: 1px solid #dce4ec; border-radius: 14px; padding: 22px; box-shadow: 0 5px 24px rgba(25,47,73,.045); }
+    .fields { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .field { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+    .field label { font-weight: 650; font-size: .88rem; }
+    .field small { color: #526578; font-size: .77rem; }
+    input, select { width: 100%; min-height: 43px; border: 1px solid #acbdcd; background: #fff; border-radius: 7px; padding: 9px 11px; color: inherit; font: inherit; }
+    input::placeholder { color: #6a7c8e; }
+    .actions { display: flex; gap: 9px; flex-wrap: wrap; margin-top: 22px; }
+    button { border: 1px solid #125b92; border-radius: 8px; background: #125b92; color: white; padding: 10px 17px; font: inherit; font-weight: 650; cursor: pointer; }
+    button:hover { background: #0b4778; }
+    button.secondary { background: #fff; color: #125b92; }
+    button.secondary:hover { background: #eef6fd; }
+    button:disabled { opacity: .5; cursor: not-allowed; }
+    .metric { display: flex; align-items: baseline; gap: 10px; margin: 6px 0 12px; }
+    #score { font-size: 3.3rem; font-weight: 750; letter-spacing: -.05em; line-height: 1; }
+    .out-of { color: #526578; }
+    #tier { display: inline-block; background: #edf2f6; border-radius: 5px; padding: 4px 10px; font-weight: 700; font-size: .91rem; }
+    #tier.low { background: #e5f5ec; color: #145831; }
+    #tier.moderate { background: #fff1d3; color: #77490b; }
+    #tier.high { background: #fce5e5; color: #8d2424; }
+    #result-note { margin: 14px 0; font-size: .9rem; color: #3c5367; }
+    #breakdown { padding: 0; margin: 12px 0 0; list-style: none; }
+    #breakdown li { display: flex; gap: 8px; justify-content: space-between; border-top: 1px solid #e8edf1; padding: 8px 0; font-size: .88rem; }
+    #breakdown .points { font-variant-numeric: tabular-nums; font-weight: 700; white-space: nowrap; }
+    .note { background: #eef5fb; border-left: 3px solid #3275a7; padding: 12px 14px; margin-top: 20px; border-radius: 4px; color: #314f67; font-size: .88rem; }
+    .note strong { color: #183b55; }
+    .footer { font-size: .83rem; color: #4b6276; margin-top: 23px; }
+    #error { color: #a12d27; margin-top: 10px; min-height: 1.5em; }
+    .result-actions { margin-top: 17px; }
+    [hidden] { display: none !important; }
+    @media (max-width: 750px) { .layout { grid-template-columns: 1fr; } .wrap { padding: 20px 12px 40px; } .panel { padding: 17px; } }
+    @media (max-width: 480px) { .fields { grid-template-columns: 1fr; } }
+    @media print { body { background: white; } .wrap { max-width: unset; padding: 0; } .layout { grid-template-columns: 1fr 1fr; } .panel { box-shadow: none; } .actions, .result-actions { display: none; } }
+  </style>
 </head>
 <body>
-
-    <div class="header">
-        <div class="header-title">
-            <h1>Qt Drug Tisdale Risk Score</h1>
-            <p>Domain: Clinical & Cryptographic AI | Standard: CAP / CLSI / NIST Standards | LabMind-Atlas Architecture</p>
+  <main class="wrap">
+    <header>
+      <div class="eyebrow">Clinical risk stratification · 2013 validated model</div>
+      <h1>Tisdale QTc Prolongation Risk Score</h1>
+      <p class="intro">Estimate the risk stratum for QTc prolongation in hospitalized patients. Enter all nine factors for a valid 0–21-point score. Calculations run locally in your browser.</p>
+    </header>
+    <div class="layout">
+      <section class="panel" aria-labelledby="input-heading">
+        <h2 id="input-heading">Clinical inputs</h2>
+        <form id="score-form" novalidate>
+          <div class="fields">
+            <div class="field"><label for="age">Age (years) · 1 point at ≥68</label><input id="age" name="age" type="number" min="0" max="150" step="any" placeholder="e.g., 72" required></div>
+            <div class="field"><label for="sex">Sex · 1 point if female</label><select id="sex" name="sex" required><option value="">Select</option><option value="female">Female</option><option value="male">Male</option></select></div>
+            <div class="field"><label for="potassium">Serum potassium (mEq/L) · 2 points if ≤3.5</label><input id="potassium" name="potassium" type="number" min=".1" max="10" step="any" placeholder="e.g., 3.8" required></div>
+            <div class="field"><label for="qtc">Admission QTc (ms) · 2 points if ≥450</label><input id="qtc" name="qtc" type="number" min="200" max="800" step="any" placeholder="e.g., 465" required></div>
+            <div class="field"><label for="num_qtdrugs">QTc-prolonging drugs</label><select id="num_qtdrugs" name="num_qtdrugs" required><option value="">Select</option><option value="0">None · 0 points</option><option value="1">One · 3 points</option><option value="2">Two or more · 6 points</option></select></div>
+            <div class="field"><label for="loop_diuretic">Loop diuretic · 1 point if yes</label><select id="loop_diuretic" name="loop_diuretic" required><option value="">Select</option><option value="yes">Yes</option><option value="no">No</option></select></div>
+            <div class="field"><label for="acute_mi">Acute myocardial infarction · 2 points</label><select id="acute_mi" name="acute_mi" required><option value="">Select</option><option value="yes">Yes</option><option value="no">No</option></select></div>
+            <div class="field"><label for="heart_failure">Heart failure · 3 points</label><select id="heart_failure" name="heart_failure" required><option value="">Select</option><option value="yes">Yes</option><option value="no">No</option></select></div>
+            <div class="field"><label for="sepsis">Sepsis · 3 points</label><select id="sepsis" name="sepsis" required><option value="">Select</option><option value="yes">Yes</option><option value="no">No</option></select></div>
+          </div>
+          <p id="error" role="alert" aria-live="polite"></p>
+          <div class="actions">
+            <button type="submit">Calculate risk</button>
+            <button class="secondary" type="button" id="example">Load example</button>
+            <button class="secondary" type="reset">Reset</button>
+          </div>
+        </form>
+      </section>
+      <section class="panel" aria-labelledby="result-heading">
+        <h2 id="result-heading">Assessment</h2>
+        <div id="result-live" aria-live="polite" aria-atomic="true">
+          <div class="metric"><span id="score">—</span><span class="out-of">/ 21 points</span></div>
+          <span id="tier">Not calculated</span>
+          <p id="result-note">Complete the clinical inputs, then calculate the risk score.</p>
         </div>
-        <div>
-            <span class="badge">Air-Gapped Active</span>
-            <span class="badge" style="background: rgba(16,185,129,0.2); color: #10b981; border-color: #10b981;">Zero-PHI Guard Active</span>
+        <ul id="breakdown" aria-label="Component score breakdown"></ul>
+        <div class="actions result-actions">
+          <button class="secondary" type="button" id="export" disabled>Export score CSV</button>
+          <button class="secondary" type="button" id="print" disabled>Print</button>
         </div>
+        <div class="note"><strong>Clinical interpretation:</strong> Low: 0–6; moderate: 7–10; high: 11–21. This score predicts QTc prolongation risk, not torsades de pointes directly. It does not replace ECG review, medication assessment, or clinical judgment.</div>
+      </section>
     </div>
-
-    <div class="metrics-bar">
-        <div class="metric-box">
-            <div class="metric-label">System Status</div>
-            <div class="metric-val" style="color: var(--success);" id="m-status">OPTIMAL</div>
-        </div>
-        <div class="metric-box">
-            <div class="metric-label">Tasks Processed</div>
-            <div class="metric-val" id="m-tasks">142</div>
-        </div>
-        <div class="metric-box">
-            <div class="metric-label">Audit Blocks Signed</div>
-            <div class="metric-val" id="m-audit">142</div>
-        </div>
-        <div class="metric-box">
-            <div class="metric-label">PHI Interceptions</div>
-            <div class="metric-val" style="color: var(--accent);" id="m-phi">0</div>
-        </div>
-    </div>
-
-    <div class="grid">
-        <div class="card">
-            <h2>⚙️ Dispatch Distributed Component Audit</h2>
-            <div class="form-group">
-                <label>Task / Sample ID</label>
-                <input type="text" id="task_id" value="TASK-2026-LIVE-01">
-            </div>
-            <div class="form-group">
-                <label>Target Identifier</label>
-                <input type="text" id="target_id" value="SPECIMEN-ALPHA-77">
-            </div>
-            <div class="form-group">
-                <label>Primary Measurement / Value</label>
-                <input type="number" id="primary_metric" value="29.4" step="0.1">
-            </div>
-            <div class="form-group">
-                <label>Secondary Metric / Kinetic Index</label>
-                <input type="number" id="secondary_metric" value="14.8" step="0.1">
-            </div>
-            <div class="form-group">
-                <label>Status / Phenotype Descriptor</label>
-                <input type="text" id="status_descriptor" value="DISCORDANT_ANOMALY">
-            </div>
-            <div class="form-group">
-                <label><input type="checkbox" id="is_critical" checked> Trigger Emergency / Critical Flag</label>
-            </div>
-            <button class="btn" onclick="runAudit()">Execute Distributed Component Audit</button>
-        </div>
-
-        <div class="card">
-            <h2>📊 Real-Time Consensus Dossier & Audit Log</h2>
-            <div class="terminal" id="outputConsole">// Qt Drug Tisdale Risk Score Operations Console Ready
-// Connection established with Air-Gapped Supervisor
-// Cryptographic HMAC-SHA256 audit ledger loaded.
-// Ready for live task payload dispatch...</div>
-        </div>
-    </div>
-
-    <script>
-        async function runAudit() {
-            const consoleEl = document.getElementById('outputConsole');
-            consoleEl.innerText = "// Dispatching task across specialized workers...
-// Invoking InvariantQCWorker, SafetyEscalationWorker, ProtocolWorker...";
-
-            const payload = {
-                task_id: document.getElementById('task_id').value,
-                target_identifier: document.getElementById('target_id').value,
-                primary_metric: parseFloat(document.getElementById('primary_metric').value),
-                secondary_metric: parseFloat(document.getElementById('secondary_metric').value),
-                status_descriptor: document.getElementById('status_descriptor').value,
-                is_critical_flag: document.getElementById('is_critical').checked
-            };
-
-            try {
-                const res = await fetch('/api/audit', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                const data = await res.json();
-                consoleEl.innerText = JSON.stringify(data, null, 2);
-                document.getElementById('m-tasks').innerText = parseInt(document.getElementById('m-tasks').innerText) + 1;
-                document.getElementById('m-audit').innerText = parseInt(document.getElementById('m-audit').innerText) + 1;
-            } catch (err) {
-                consoleEl.innerText = "// Offline / Simulation Output:\n" + JSON.stringify({
-                    dossier_id: "DOSSIER-SIM-" + Math.floor(Math.random()*10000),
-                    system: "qt-drug-tisdale-risk-score",
-                    domain: "Clinical & Cryptographic AI",
-                    task_id: payload.task_id,
-                    overall_urgency: payload.is_critical_flag ? "CRITICAL_STAT_PANIC" : "ELEVATED_RISK",
-                    integrity_status: "DISCORDANT_ANOMALY",
-                    alerts: [
-                        { worker: "InvariantQCWorker", alert: "Primary metric exceeds upper reference bound" },
-                        { worker: "SafetyEscalationWorker", alert: "Critical emergency interlock flag active" }
-                    ],
-                    audit_hash: "HMAC_SHA256_e83f9a72b941d6c381f9"
-                }, null, 2);
-            }
-        }
-    </script>
+    <footer class="footer">
+      <p><strong>Reference:</strong> Tisdale JE, Jaynes HA, Kingery JR, et al. Development and validation of a risk score to predict QT interval prolongation in hospitalized patients. <em>Circ Cardiovasc Qual Outcomes.</em> 2013;6(4):479–487. <a href="https://pubmed.ncbi.nlm.nih.gov/23716032/" target="_blank" rel="noopener noreferrer">PMID 23716032</a>.</p>
+      <p><strong>Privacy:</strong> This web calculator has no external services, cookies, analytics, or patient-data storage. Avoid entering direct patient identifiers. Intended for educational and clinical decision support, not autonomous treatment decisions.</p>
+    </footer>
+  </main>
+  <script type="module" src="./app.mjs"></script>
 </body>
 </html>

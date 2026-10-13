@@ -41,9 +41,9 @@ class TestCalculateTisdaleScore:
         assert result["risk_classification"] == "High Risk"
 
     def test_age_threshold(self):
-        """Age >= 65 should add 1 point."""
-        young = calculate_tisdale_score(age=64)
-        old = calculate_tisdale_score(age=65)
+        """Age >= 68 should add 1 point."""
+        young = calculate_tisdale_score(age=67)
+        old = calculate_tisdale_score(age=68)
         assert young["score"] == 0
         assert old["score"] == 1
 
@@ -66,7 +66,7 @@ class TestCalculateTisdaleScore:
         normal_k = calculate_tisdale_score(potassium=3.6)
         low_k = calculate_tisdale_score(potassium=3.5)
         assert normal_k["score"] == 0
-        assert low_k["score"] == 1
+        assert low_k["score"] == 2
 
     def test_qtc_prolongation(self):
         """QTc >= 450 should add 2 points."""
@@ -83,62 +83,63 @@ class TestCalculateTisdaleScore:
         assert with_mi["score"] == 2
 
     def test_heart_failure(self):
-        """Heart failure should add 2 points."""
+        """Heart failure should add 3 points."""
         no_hf = calculate_tisdale_score(heart_failure=False)
         with_hf = calculate_tisdale_score(heart_failure=True)
         assert no_hf["score"] == 0
-        assert with_hf["score"] == 2
+        assert with_hf["score"] == 3
 
     def test_multiple_qt_drugs(self):
-        """Multiple QT drugs should add 2 points, single adds 1."""
+        """Multiple QT drugs add 6 points, a single drug adds 3."""
         no_drugs = calculate_tisdale_score(num_qtdrugs=0)
         one_drug = calculate_tisdale_score(num_qtdrugs=1)
         two_drugs = calculate_tisdale_score(num_qtdrugs=2)
         assert no_drugs["score"] == 0
-        assert one_drug["score"] == 1
-        assert two_drugs["score"] == 2
+        assert one_drug["score"] == 3
+        assert two_drugs["score"] == 6
 
     def test_sepsis(self):
-        """Sepsis should add 2 points."""
+        """Sepsis should add 3 points."""
         no_sepsis = calculate_tisdale_score(sepsis=False)
         with_sepsis = calculate_tisdale_score(sepsis=True)
         assert no_sepsis["score"] == 0
-        assert with_sepsis["score"] == 2
+        assert with_sepsis["score"] == 3
 
     def test_hypoalbuminemia(self):
-        """Hypoalbuminemia should add 2 points."""
+        """Hypoalbuminemia is not part of the Tisdale score."""
         normal_alb = calculate_tisdale_score(hypoalbuminemia=False)
         low_alb = calculate_tisdale_score(hypoalbuminemia=True)
         assert normal_alb["score"] == 0
-        assert low_alb["score"] == 2
+        assert low_alb["score"] == 0
+        assert low_alb["warnings"]
 
     def test_risk_classification_low(self):
-        """Score <= 6 should be Low Risk."""
-        result = calculate_tisdale_score(age=30, sex="male")
+        """Complete low-risk profile."""
+        result = calculate_tisdale_score(
+            age=30, sex="male", loop_diuretic=False, potassium=4,
+            qtc=400, acute_mi=False, heart_failure=False,
+            num_qtdrugs=0, sepsis=False
+        )
         assert result["risk_classification"] == "Low Risk"
 
     def test_risk_classification_moderate(self):
-        """Score 7-10 should be Moderate Risk."""
-        result = calculate_tisdale_score(age=70, sex="female", qtc=460)
-        # 1 (age) + 1 (female) + 2 (qtc) = 4 -- need more
-        result = calculate_tisdale_score(age=70, sex="female", qtc=460, heart_failure=True, acute_mi=True)
-        # 1 + 1 + 2 + 2 + 2 = 8
-        assert result["score"] >= 7
-        assert result["score"] <= 10
+        """Complete moderate-risk profile (9 points)."""
+        result = calculate_tisdale_score(
+            age=70, sex="female", loop_diuretic=False, potassium=4,
+            qtc=460, acute_mi=True, heart_failure=True,
+            num_qtdrugs=0, sepsis=False
+        )
+        assert result["score"] == 9
         assert result["risk_classification"] == "Moderate Risk"
 
     def test_risk_classification_high(self):
-        """Score >= 11 should be High Risk."""
+        """Complete high-risk profile."""
         result = calculate_tisdale_score(
-            age=70, sex="female", qtc=460, heart_failure=True,
-            acute_mi=True, sepsis=True
+            age=70, sex="female", loop_diuretic=False, potassium=4,
+            qtc=460, acute_mi=True, heart_failure=True,
+            num_qtdrugs=0, sepsis=True
         )
-        # 1 + 1 + 2 + 2 + 2 + 2 = 10 -- need one more
-        result = calculate_tisdale_score(
-            age=70, sex="female", qtc=460, heart_failure=True,
-            acute_mi=True, sepsis=True, hypoalbuminemia=True
-        )
-        assert result["score"] >= 11
+        assert result["score"] == 12
         assert result["risk_classification"] == "High Risk"
 
     def test_component_breakdown(self):
@@ -148,10 +149,10 @@ class TestCalculateTisdaleScore:
         assert len(result["component_breakdown"]) == 3
 
     def test_empty_input(self):
-        """No parameters should return score 0."""
+        """No parameters yield an incomplete zero-point subtotal."""
         result = calculate_tisdale_score()
         assert result["score"] == 0
-        assert result["risk_classification"] == "Low Risk"
+        assert result["risk_classification"] == "Incomplete"
 
     def test_partial_input(self):
         """Partial parameters should calculate correctly."""

@@ -1,112 +1,121 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "Qt Drug Tisdale Risk Score API",
-    "description": "Enterprise Distributed Component Platform (Clinical & Cryptographic AI) adhering to CAP / CLSI / NIST Standards.",
-    "version": "3.0.0-ENTERPRISE",
-    "contact": {
-      "name": "Dr. Abu Suraih Sakhri",
-      "url": "https://github.com/abusuraihsakhri"
-    }
+    "title": "Tisdale QTc Risk Score API",
+    "description": "Deterministic clinical scoring plus legacy local demonstration endpoints. Refer to /openapi.json for the runtime-generated API schema.",
+    "version": "1.0.0"
   },
   "paths": {
     "/health": {
       "get": {
-        "summary": "Health and metadata check",
+        "summary": "Service health",
         "responses": {
           "200": {
-            "description": "System optimal"
+            "description": "Service status"
           }
         }
       }
     },
     "/metrics": {
       "get": {
-        "summary": "Prometheus operational metrics",
+        "summary": "Process counters (JSON)",
         "responses": {
           "200": {
-            "description": "Prometheus text metrics"
+            "description": "Process metrics"
+          }
+        }
+      }
+    },
+    "/api/score": {
+      "post": {
+        "summary": "Calculate validated Tisdale risk score",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "age",
+                  "sex",
+                  "loop_diuretic",
+                  "potassium",
+                  "qtc",
+                  "acute_mi",
+                  "heart_failure",
+                  "num_qtdrugs",
+                  "sepsis"
+                ],
+                "properties": {
+                  "age": {
+                    "type": "number"
+                  },
+                  "sex": {
+                    "type": "string"
+                  },
+                  "loop_diuretic": {
+                    "type": "boolean"
+                  },
+                  "potassium": {
+                    "type": "number"
+                  },
+                  "qtc": {
+                    "type": "number"
+                  },
+                  "acute_mi": {
+                    "type": "boolean"
+                  },
+                  "heart_failure": {
+                    "type": "boolean"
+                  },
+                  "num_qtdrugs": {
+                    "type": "integer"
+                  },
+                  "sepsis": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Score, risk tier, point breakdown and completeness"
+          },
+          "422": {
+            "description": "Invalid clinical input"
           }
         }
       }
     },
     "/api/audit": {
       "post": {
-        "summary": "Dispatch task payload across specialized workers",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "task_id": {
-                    "type": "string"
-                  },
-                  "target_identifier": {
-                    "type": "string"
-                  },
-                  "primary_metric": {
-                    "type": "number"
-                  },
-                  "secondary_metric": {
-                    "type": "number"
-                  },
-                  "status_descriptor": {
-                    "type": "string"
-                  },
-                  "is_critical_flag": {
-                    "type": "boolean"
-                  }
-                },
-                "required": [
-                  "task_id",
-                  "target_identifier",
-                  "primary_metric"
-                ]
-              }
-            }
-          }
-        },
+        "summary": "Legacy generic demonstration audit (not clinical scoring)",
         "responses": {
           "200": {
-            "description": "Consensus dossier with HMAC signature"
-          }
-        }
-      }
-    },
-    "/api/chat": {
-      "post": {
-        "summary": "Air-gapped supervisory conversational assistant",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "query": {
-                    "type": "string"
-                  }
-                },
-                "required": [
-                  "query"
-                ]
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Supervisory response"
+            "description": "In-memory demonstration dossier"
           }
         }
       }
     },
     "/api/audit/logs": {
       "get": {
-        "summary": "Retrieve and cryptographically verify HMAC audit trail",
+        "summary": "Legacy in-memory audit log",
         "responses": {
           "200": {
-            "description": "Cryptographic audit trail"
+            "description": "In-memory signatures and verification status"
+          }
+        }
+      }
+    },
+    "/api/chat": {
+      "post": {
+        "summary": "Offline mock response (no model inference)",
+        "responses": {
+          "200": {
+            "description": "Demonstration response"
           }
         }
       }
