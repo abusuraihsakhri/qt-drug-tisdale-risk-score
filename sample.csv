@@ -1,4 +1,4 @@
-Patient_ID,v1,v2,v3
-PT-101,14.5,4.2,1.8
-PT-102,8.0,2.1,0.5
-PT-103,28.4,12.0,5.5
+case_id,age,sex,loop_diuretic,potassium,qtc,acute_mi,heart_failure,num_qtdrugs,sepsis
+EXAMPLE-LOW,45,male,no,4.1,410,no,no,0,no
+EXAMPLE-MODERATE,70,female,no,4.0,460,yes,yes,0,no
+EXAMPLE-HIGH,72,female,yes,3.4,465,no,yes,2,no
