@@ -61,7 +61,7 @@ python -m pip install -r requirements-api.txt
 python cli.py serve  # http://127.0.0.1:8000, docs at /docs
 ```
 
-`POST /api/score` accepts the nine required fields as JSON and returns the validated clinical score. `GET /health` and `GET /metrics` expose process status. The original `/api/audit`, `/api/audit/logs`, `/api/chat`, and `cli.py audit/chat/verify-audit` routines are preserved for compatibility; these are **generic demonstration utilities, not clinical scoring or validated real-time monitoring**. The chat engine is a deterministic mock even if other providers are selected. Do not treat its output as medical advice.
+`POST /api/score` accepts the nine required fields as JSON and returns the validated clinical score. `GET /health` and `GET /metrics` expose process status. The original `/api/audit`, `/api/audit/logs`, `/api/chat`, and `cli.py audit/chat/verify-audit` routines are preserved for compatibility; these are **generic demonstration utilities, not clinical scoring or validated real-time monitoring**. Only the deterministic offline mock provider is implemented; other provider selections are rejected. Do not treat its output as medical advice.
 
 To run Docker locally:
 
