@@ -139,6 +139,8 @@ def calculate_tisdale_score(
         classification = "Incomplete"
         recommendation = "Complete all nine risk factors before interpreting the risk category"
         warnings.append("Only a subtotal was calculated; missing factors may increase the risk score.")
+        if score >= 11:
+            warnings.append("The observed subtotal already meets the high-risk threshold.")
     return {
         "tool": "qt-drug-tisdale-risk-score",
         "score": score,
