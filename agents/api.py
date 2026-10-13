@@ -13,8 +13,8 @@ supervisor = SystemSupervisor(model_provider="mock")
 
 app = FastAPI(
     title="Qt Drug Tisdale Risk Score API",
-    description="Enterprise Distributed Component Platform (Clinical & Biomedical AI)",
-    version="3.0.0-ENTERPRISE",
+    description="Tisdale QTc risk score and local legacy audit demonstration",
+    version="1.0.0",
 )
 
 
@@ -47,7 +47,7 @@ def api_score(payload: TisdaleAssessment):
 
 @app.get("/health")
 def health():
-    return {"status": "HEALTHY", "service": "qt-drug-tisdale-risk-score", "domain": "Clinical & Biomedical AI", "standard": "CAP / CLSI / ISO Standards", "version": "3.0.0-ENTERPRISE"}
+    return {"status": "HEALTHY", "service": "qt-drug-tisdale-risk-score", "version": "1.0.0"}
 
 
 @app.get("/metrics")
@@ -55,7 +55,7 @@ def metrics():
     return {
         "dossiers_processed_total": len(supervisor.dossier_registry),
         "audit_blocks_total": len(AuditLogger.get_trail()),
-        "system_status": "NOMINAL_OPTIMAL"
+        "system_status": "RUNNING"
     }
 
 
