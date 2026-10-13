@@ -1,196 +1,95 @@
-# Qt Drug Tisdale Risk Score
+# Tisdale QTc Prolongation Risk Score
 
-> **Domain:** Clinical Decision Support & Biomedical Computing  
-> **Reference:** Tisdale JE, et al. Development and validation of a risk score for drug-induced QT prolongation. J Am Coll Cardiol. 2013;61(14):1450-1457.
+A deterministic implementation of the published **Tisdale 0–21-point risk score** for QTc prolongation in hospitalized patients. Includes a standalone browser calculator, a dependency-free Python CLI, CSV batch processing, and an optional FastAPI service.
 
-<div align="center">
+## What is scored?
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-![Python](https://img.shields.io/badge/Python-3.10%20%7C%203.11%20%7C%203.12-3776AB.svg?logo=python&logoColor=white)
-![FastAPI](https://img.shields.io/badge/FastAPI-0.111-009688.svg?logo=fastapi&logoColor=white)
-![Audit Trail](https://img.shields.io/badge/Audit-HMAC--SHA256_Tamper--Evident-brightgreen.svg)
-![Zero-PHI Guard](https://img.shields.io/badge/Guard-Zero--PHI_Outbound-blue.svg)
-![Docker](https://img.shields.io/badge/Docker-Ready-2496ED.svg?logo=docker&logoColor=white)
-
-</div>
-
----
-
-## What It Does
-
-Calculates the validated **Tisdale Risk Score (0-16)** to quantify risk of QTc prolongation in hospitalized patients receiving torsadogenic drugs. The score helps clinicians identify patients at risk for drug-induced long QT syndrome and torsades de pointes.
-
-Zero-dependency Python implementation with single and batch evaluation.
-
-Author: Dr. Abu Suraih Sakhri  
-License: MIT
-
----
-
-## Clinical Background
-
-The Tisdale Risk Score assigns points based on established risk factors for QT prolongation:
-
-| Risk Factor | Points |
-|:------------|:------:|
-| Age >= 65 years | 1 |
+| Factor | Points |
+| --- | ---: |
+| Age ≥68 years | 1 |
 | Female sex | 1 |
-| Loop diuretic use | 1 |
-| Serum potassium <= 3.5 mEq/L | 1 |
-| Admission QTc >= 450 ms | 2 |
+| Loop diuretic | 1 |
+| Potassium ≤3.5 mEq/L | 2 |
+| Admission QTc ≥450 ms | 2 |
 | Acute myocardial infarction | 2 |
-| Heart failure | 2 |
-| One QTc-prolonging drug | 1 |
-| Two or more QTc-prolonging drugs | 2 |
-| Sepsis | 2 |
-| Hypoalbuminemia | 2 |
+| Heart failure | 3 |
+| Sepsis | 3 |
+| One QTc-prolonging drug | 3 |
+| Two or more QTc-prolonging drugs | **6 total** |
 
-**Total possible score: 0-16**
+**Risk strata:** 0–6 low; 7–10 moderate; 11–21 high. The two-or-more-drug category includes the three points for one drug **plus three additional points**. Hypoalbuminemia is *not* part of the published score and is not counted.
 
-### Risk Classification
+All nine fields must be supplied to report a risk stratum. Partial input is returned as a subtotal with an **Incomplete** label; unspecified risk factors are never treated as absent.
 
-| Score | Classification | Recommendation |
-|:------|:---------------|:---------------|
-| 0-6 | Low Risk | Standard monitoring |
-| 7-10 | Moderate Risk | Enhanced monitoring recommended |
-| 11-16 | High Risk | Continuous telemetry and electrolyte management |
+Reference: Tisdale JE, Jaynes HA, Kingery JR, et al. Development and validation of a risk score to predict QT interval prolongation in hospitalized patients. *Circ Cardiovasc Qual Outcomes.* 2013;6(4):479–487. DOI: [10.1161/CIRCOUTCOMES.113.000152](https://doi.org/10.1161/CIRCOUTCOMES.113.000152), PMID: [23716032](https://pubmed.ncbi.nlm.nih.gov/23716032/).
 
----
+## Browser application
 
-## Installation
+The static website is in [`web/index.html`](web/index.html). Open it locally in a browser through a static HTTP server, or access the GitHub Pages deployment once enabled and verified. No Python runtime, Pyodide, server, build system, account, or network call is needed for the scoring workflow.
 
-```bash
-# Clone the repository
-git clone https://github.com/abusuraihsakhri/qt-drug-tisdale-risk-score.git
-cd qt-drug-tisdale-risk-score
+Features: accessible inputs for all nine factors, validation, itemized point contributions, risk classification, reset, synthetic example, local CSV export, and print view. The implementation uses plain JavaScript modules (`web/calculator.mjs` and `web/app.mjs`).
 
-# No external dependencies required for core functionality
-# For API server and tests:
-pip install fastapi uvicorn pydantic pytest
-```
-
----
-
-## Usage
-
-### 1. Single Case Evaluation
+For local development:
 
 ```bash
-# Evaluate a single patient
-python tisdale_qt.py single --age 72 --sex female --potassium 3.2 --qtc 470 --num-qtdrugs 2
-
-# Output:
-# {
-#   "tool": "qt-drug-tisdale-risk-score",
-#   "score": 9,
-#   "max_score": 16,
-#   "risk_classification": "Moderate Risk",
-#   "clinical_recommendation": "Enhanced monitoring recommended",
-#   "component_breakdown": [...],
-#   "factors_evaluated": 5
-# }
+python -m http.server 8080 --directory web
+# Open http://localhost:8080/
 ```
 
-### 2. Batch CSV Processing
+## Python CLI (standard library only)
 
 ```bash
-# Process a CSV file with patient records
-python tisdale_qt.py batch -i patients.csv -o results.csv
+python tisdale_qt.py single \
+  --age 72 --sex female --loop-diuretic --potassium 3.4 \
+  --qtc 465 --no-acute-mi --heart-failure --num-qtdrugs 2 --no-sepsis
 ```
 
-**Input CSV format:**
-```csv
-Patient_ID,age,sex,potassium,qtc,num_qtdrugs
-PT-001,72,female,3.2,470,2
-PT-002,45,male,4.0,420,0
-PT-003,80,female,3.0,480,3
-```
+This **complete synthetic example scores 16 points (high risk)**. Boolean flags accept both `--flag` and `--no-flag` to record explicit yes/no answers. Omitting a field produces an incomplete assessment.
 
-### 3. API Server (FastAPI)
+Batch mode:
 
 ```bash
-# Start the REST API server
-python cli.py serve --host 0.0.0.0 --port 8000
-
-# Health check
-curl http://localhost:8000/health
-
-# Audit logs
-curl http://localhost:8000/api/audit/logs
+python tisdale_qt.py batch -i sample.csv -o results.csv
 ```
 
-### 4. Docker Deployment
+The CSV columns are `age,sex,loop_diuretic,potassium,qtc,acute_mi,heart_failure,num_qtdrugs,sepsis`. Boolean cells accept `true/false`, `yes/no`, or `1/0`. Blank fields produce an incomplete result. Invalid rows are recorded as `ERROR` while valid rows continue. The output preserves input columns and includes the score, classification, recommendation, and missing fields. Exported spreadsheet-formula-like text fields are escaped.
+
+## Optional API and legacy audit demonstration
 
 ```bash
-# Build and run with Docker Compose
-cp .env.example .env
-# Edit .env to set AUDIT_SECRET_KEY
-docker-compose up -d
-
-# Or build manually
-docker build -t qt-drug-tisdale-risk-score .
-docker run -p 8000:8000 qt-drug-tisdale-risk-score
+python -m pip install -r requirements-api.txt
+python cli.py serve  # http://127.0.0.1:8000, docs at /docs
 ```
 
----
+`POST /api/score` accepts the nine required fields as JSON and returns the validated clinical score. `GET /health` and `GET /metrics` expose process status. The original `/api/audit`, `/api/audit/logs`, `/api/chat`, and `cli.py audit/chat/verify-audit` routines are preserved for compatibility; these are **generic demonstration utilities, not clinical scoring or validated real-time monitoring**. The chat engine is a deterministic mock even if other providers are selected. Do not treat its output as medical advice.
+
+To run Docker locally:
+
+```bash
+docker compose up --build
+```
+
+The container exposes the API on **localhost:8000**. For the in-memory HMAC audit demonstration, supply a persistent `AUDIT_SECRET_KEY` environment variable if audit signatures need to remain verifiable across instances; in-memory logs themselves are not persisted.
 
 ## Testing
 
 ```bash
-# Run all tests
-pytest -v
-
-# Run specific test modules
-pytest test_tisdale_qt.py -v
-pytest tests/ -v
+python -m pip install -r requirements-api.txt pytest
+pytest -q
+node --test tests/test_browser.mjs  # Node.js 22+
+docker build -t tisdale-risk-score .
 ```
 
----
+GitHub Actions runs the Python tests on 3.10, 3.11 and 3.12, browser module tests, a CLI smoke test, and a Docker build. The separate Pages workflow publishes `web/` from `master` when Pages is configured to deploy using GitHub Actions.
 
-## Security Features
+## Privacy, applicability and limitations
 
-* **Zero-PHI Outbound Interceptor:** Active regex inspection blocking SSNs, MRNs, phone numbers, and patient identifiers from outbound data.
-* **Tamper-Evident HMAC-SHA256 Audit Trail:** Chained, cryptographically signed logs for every evaluation.
-* **Input Validation:** Comprehensive validation of all clinical parameters with bounds checking.
-* **Path Traversal Protection:** Safe file path handling for batch processing.
-* **Secure Defaults:** Cryptographically random HMAC key generation when not explicitly configured.
-
-### Environment Configuration
-
-Copy `.env.example` to `.env` and configure:
-
-```bash
-# Generate a secure key
-python -c "import secrets; print(secrets.token_hex(32))"
-
-# Add to .env
-AUDIT_SECRET_KEY=your-generated-key-here
-```
-
----
-
-## Project Structure
-
-```
-qt-drug-tisdale-risk-score/
-├── tisdale_qt.py          # Core algorithm & CLI
-├── cli.py                 # Advanced CLI with audit features
-├── agents/                # Enterprise agent framework
-│   ├── base.py           # Security, PHI guard, audit trail
-│   ├── models.py         # Pydantic data models
-│   ├── supervisor.py     # Multi-agent orchestration
-│   ├── workers.py        # Domain-specific workers
-│   ├── api.py            # FastAPI endpoints
-│   └── ...
-├── tests/                # Test suite
-├── web/index.html        # Operations dashboard
-├── Dockerfile            # Container definition
-├── docker-compose.yml    # Service orchestration
-└── README.md             # This file
-```
-
----
+- **Static calculator:** input values stay in the browser; no analytics, cookies, backend requests, or persistent browser storage. CSV export and printing are explicit user actions.
+- **Python CLI:** local data are processed on the invoking machine; CSV identifiers can still be sensitive. Use synthetic/de-identified data in examples and shared outputs.
+- **Optional API:** not authenticated and **not suitable for direct public exposure or identifiable patient data** without additional controls. The audit demonstration uses heuristic identifier patterns; it is not comprehensive de-identification or a HIPAA compliance guarantee.
+- The score was derived and internally validated in hospitalized cardiac-care patients. It estimates QTc prolongation risk, **not an individual's probability of torsades de pointes**. It does not independently prescribe medication changes, telemetry, or treatment. Clinical assessment and local protocols remain necessary.
+- No real-time medication database, FHIR ingestion, longitudinal tracking or verified external model inference is implemented.
 
 ## License
 
-MIT License - see [LICENSE](LICENSE) for details.
+[MIT](LICENSE).
